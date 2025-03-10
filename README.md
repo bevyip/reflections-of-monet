@@ -6,6 +6,8 @@
 
 **Reflections of Monet** is an interactive web art experience that reimagines Monet’s _Water Lilies_, translating its physical beauty into a dynamic fusion of light, movement, and sound.
 
+Use mouse clicks and scrolling to explore and immerse yourself in the full depth of Monet’s iconic _Water Lilies_ paintings.
+
 ## Features
 
 - **Immersive visual reinterpretation** of Monet’s iconic masterpiece, bringing it to life through interactive elements.
