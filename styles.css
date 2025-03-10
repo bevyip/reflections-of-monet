@@ -1,0 +1,98 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  overflow-x: hidden;
+  background-color: #000;
+}
+
+.sections-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.section {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#backgroundVideo {
+  z-index: 1;
+}
+
+#middle-1 {
+  z-index: 2;
+}
+
+#middle-2 {
+  z-index: 3;
+}
+
+canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* First section specific styles */
+.first-section canvas {
+  pointer-events: auto; /* Enable interactions for the first canvas */
+  z-index: 4;
+}
+
+.lotus-trace-container {
+  position: fixed;
+  bottom: 20px;
+  left: 40px;
+  transform: none;
+  display: flex;
+  gap: 20px;
+  z-index: 1000;
+  pointer-events: auto;
+}
+
+.lotus-trace {
+  width: 100px;
+  height: auto;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+  cursor: pointer;
+}
+
+.lotus-trace:hover {
+  opacity: 1;
+}
+
+.flash {
+  animation: flash 1s ease-in-out infinite alternate;
+}
+
+@keyframes flash {
+  0% {
+    transform: scale(1.2); /* Start larger */
+  }
+  50% {
+    transform: scale(0.8); /* Go smaller */
+  }
+  100% {
+    transform: scale(1); /* Return to normal size */
+  }
+}

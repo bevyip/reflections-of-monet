@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Water Lilies</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="sections-container">
+        <section class="section first-section">
+            <video id="backgroundVideo" autoplay muted loop playsinline>
+                <source src="img/start.mp4" type="video/mp4">
+            </video>
+            <canvas id="waterLiliesCanvas"></canvas>
+            <div class="lotus-trace-container">
+                <img src="img/lotus-trace.png" class="lotus-trace" alt="Lotus trace 1">
+                <img src="img/lotus-trace.png" class="lotus-trace" alt="Lotus trace 2">
+                <img src="img/lotus-trace.png" class="lotus-trace" alt="Lotus trace 3">
+            </div>
+        </section>
+        <section class="section transition-section">
+            <video id="middle-1" src="img/middle-1.mp4"></video>
+            <canvas id="waterLiliesCanvas2"></canvas>
+        </section>
+        <section class="section loop-section">
+            <video id="middle-2" src="img/middle-2.mp4"></video>
+            <canvas id="waterLiliesCanvas3"></canvas>
+        </section>
+        <section class="section end-section">
+            <video id="end" src="img/end.mp4" autoplay muted loop playsinline></video>
+            <canvas id="waterLiliesCanvas4"></canvas>
+        </section>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>
