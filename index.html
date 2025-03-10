@@ -4,8 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Animated Water Lilies</title>
+    <title>Reflections of Monet</title>
+    <link rel="icon" href="img/lotus.png" type="image/png">
     <link rel="stylesheet" href="styles.css">
+
+    <meta property="og:title" content="Reflections of Monet">
+    <meta property="og:description"
+        content="Immerse yourself in a digital reimagining of Monet’s Water Lilies, where sound, movement, and light bring the masterpiece to life.">
+    <meta property="og:image" content="img/opengraph.png">
+    <meta property="og:url" content="https://bevyip.github.io/reflections-of-monet/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Reflections of Monet">
+
 </head>
 
 <body>
@@ -33,6 +43,9 @@
             <video id="end" src="img/end.mp4" autoplay muted loop playsinline></video>
             <canvas id="waterLiliesCanvas4"></canvas>
         </section>
+    </div>
+    <div id="overlay">
+        <img id="lotusImage" class="bounce" src="img/lotus.png" alt="Lotus">
     </div>
     <script src="script.js"></script>
 </body>

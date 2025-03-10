@@ -1,3 +1,10 @@
+history.scrollRestoration = "manual"; // Prevent automatic scroll restoration
+window.onload = function () {
+  setTimeout(() => {
+    window.scrollTo(0, 0); // Reset scroll position after a short delay
+  }, 100); // Adjust the delay as needed
+};
+
 // Create an array of canvas elements
 const canvases = [
   document.getElementById("waterLiliesCanvas"),
@@ -41,8 +48,24 @@ const lotusImage = new Image();
 lotusImage.src = "img/lotus.png";
 
 // Load success audio
-const successAudio = new Audio("audio/success.mp3"); // Ensure the path is correct
-successAudio.volume = 0.8; // Set the volume to 0.8
+const successAudio = new Audio("audio/success.mp3");
+successAudio.volume = 0.4;
+
+// Load section audio
+const startAudio = new Audio("audio/start.mp3");
+const transitionAudio = new Audio("audio/transition.mp3");
+const loopingSectionAudio = new Audio("audio/looping-section.mp3");
+const sirenAudio = new Audio("audio/end.mp3");
+let isInFinalScene = false;
+
+// Set audio to loop
+startAudio.loop = true;
+startAudio.volume = 0.7;
+transitionAudio.loop = true;
+loopingSectionAudio.loop = true;
+loopingSectionAudio.volume = 0.6;
+sirenAudio.loop = true;
+sirenAudio.volume = 0.7;
 
 // Initialize styles
 canvases.forEach((canvas, index) => {
@@ -92,6 +115,36 @@ if (endVideo) {
   endVideo.style.opacity = "0";
   endVideo.style.transition = `opacity ${FADE_DURATION}s ease-in-out`;
 }
+
+// Function to show the overlay
+function showOverlay() {
+  document.body.classList.add("no-scroll");
+  startAudio.pause();
+}
+
+// Function to hide the overlay
+function hideOverlay() {
+  const overlay = document.getElementById("overlay");
+  const lotusImage = document.getElementById("lotusImage");
+  lotusImage.classList.remove("bounce");
+
+  overlay.classList.add("shrink");
+
+  setTimeout(() => {
+    document.body.removeChild(overlay);
+    document.body.classList.remove("no-scroll");
+    startAudio.play();
+  }, 3000);
+}
+
+// Add click event listener to the overlay
+document.getElementById("lotusImage").addEventListener("click", () => {
+  successAudio.play();
+  hideOverlay();
+});
+
+// Show the overlay when the page loads
+window.addEventListener("load", showOverlay);
 
 // Swimming text array
 const monet_sentences = [
@@ -489,10 +542,11 @@ finalImage.src = "img/fin.jpg";
 // Add these constants at the top with other constants
 const MAX_ZOOM = 20; // Maximum zoom level (starting zoom)
 const MIN_ZOOM = 1; // Minimum zoom level (fully zoomed out)
-const ZOOM_SCROLL_SENSITIVITY = 0.01; // How much zoom changes per scroll pixel
+const ZOOM_SCROLL_SENSITIVITY = 0.001; // How much zoom changes per scroll pixel
 
 // Modify the transitionToFinalState function
 function transitionToFinalState() {
+  isInFinalScene = true;
   // Hide all videos and existing canvases
   [backgroundVideo, transitionVideo, loopingVideo, endVideo].forEach(
     (video) => {
@@ -503,8 +557,14 @@ function transitionToFinalState() {
     }
   );
 
-  canvases.forEach((canvas) => {
-    canvas.style.opacity = "0";
+  // Remove existing scroll listener
+  window.removeEventListener("scroll", handleScroll);
+
+  const sections = document.querySelectorAll(".sections-container .section");
+  sections.forEach((section) => {
+    if (section.parentNode) {
+      section.parentNode.removeChild(section);
+    }
   });
 
   // Add a class to the body to change cursor style
@@ -533,32 +593,6 @@ function transitionToFinalState() {
   finalContainer.appendChild(finalImageElement);
   document.body.appendChild(finalContainer);
 
-  // Comprehensive scrollbar hiding
-  const style = document.createElement("style");
-  style.textContent = `
-    /* Hide scrollbar for Chrome, Safari and Opera */
-    ::-webkit-scrollbar {
-      display: none;
-      width: 0;
-      background: transparent;
-    }
-    
-    /* Hide scrollbar for IE, Edge and Firefox */
-    html, body {
-      -ms-overflow-style: none !important;  /* IE and Edge */
-      scrollbar-width: none !important;     /* Firefox */
-      overflow: -moz-scrollbars-none !important; /* Old Firefox */
-      scrollbar-color: transparent transparent !important;
-    }
-    
-    /* Additional fallback */
-    * {
-      -ms-overflow-style: none !important;
-      scrollbar-width: none !important;
-    }
-  `;
-  document.head.appendChild(style);
-
   // Enable scrolling but ensure scrollbars are hidden
   document.documentElement.style.overflow = "auto";
   document.documentElement.style.scrollBehavior = "smooth";
@@ -572,11 +606,33 @@ function transitionToFinalState() {
     finalImageElement.style.opacity = "1";
   });
 
+  // Create and show the lotus image
+  const lotusImage = document.createElement("img");
+  lotusImage.src = "img/lotus.png";
+  lotusImage.style.width = "100px";
+  lotusImage.style.opacity = "0";
+  lotusImage.style.position = "absolute";
+  lotusImage.style.bottom = "50px";
+  lotusImage.style.left = "50%";
+  lotusImage.style.transform = "translateX(-50%)";
+  lotusImage.style.zIndex = "1001";
+  lotusImage.style.cursor = "pointer";
+
+  finalContainer.appendChild(lotusImage);
+
   // Track the current zoom level
   let currentZoom = MAX_ZOOM;
 
-  // Remove existing scroll listener
-  window.removeEventListener("scroll", handleScroll);
+  if (startAudio.paused) {
+    startAudio.play().catch((error) => {
+      console.error("Error playing start audio:", error);
+    });
+  }
+
+  // Stop other audio tracks
+  transitionAudio.pause();
+  loopingSectionAudio.pause();
+  sirenAudio.pause();
 
   // Add new scroll handler for zoom effect
   function handleFinalScroll() {
@@ -586,6 +642,11 @@ function transitionToFinalState() {
     const targetZoom = MAX_ZOOM - scrollProgress * (MAX_ZOOM - MIN_ZOOM);
     currentZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, targetZoom));
     finalImageElement.style.transform = `scale(${currentZoom})`;
+
+    if (currentZoom === MIN_ZOOM) {
+      lotusImage.style.opacity = "1";
+      animateLotus(lotusImage);
+    }
   }
 
   // Set up the scroll area
@@ -597,6 +658,37 @@ function transitionToFinalState() {
 
   // Add scroll listener
   window.addEventListener("scroll", handleFinalScroll);
+
+  lotusImage.onclick = function () {
+    startAudio.pause();
+    location.reload(); // Refresh the page
+  };
+}
+
+// Function to animate the lotus image
+function animateLotus(lotusImage) {
+  totalDistance = 0;
+
+  function updateLotusPosition() {
+    const movement = {
+      x: totalDistance + Math.sin(time * 0.015) * 6,
+      y: Math.sin(time * 0.01) * 4 + Math.sin(time * 0.02) * 2,
+    };
+    totalDistance += RIVER_FLOW_SPEED * flowDirection;
+
+    // Change direction if it reaches the edge
+    if (randomLotusPosition.originalX + movement.x > window.innerWidth - 100)
+      flowDirection = -1;
+    else if (randomLotusPosition.originalX + movement.x < 100)
+      flowDirection = 1;
+
+    lotusImage.style.left = `${randomLotusPosition.originalX + movement.x}px`;
+    lotusImage.style.top = `${randomLotusPosition.originalY + movement.y}px`;
+
+    requestAnimationFrame(updateLotusPosition);
+  }
+
+  updateLotusPosition();
 }
 
 // Modify the click handlers to check for completion
@@ -875,9 +967,7 @@ handleScroll();
 function handleMouseMove(e) {
   // Handle ripple effect in first section only
   const canvas1 = canvases[0];
-  const canvas3 = canvases[3];
   const rect1 = canvas1.getBoundingClientRect();
-  const rect3 = canvas3.getBoundingClientRect();
 
   // Create ripples for first section only
   if (
@@ -975,11 +1065,9 @@ function handleMouseMove(e) {
 
 // Modify the handleScroll function to reinitialize swimming texts when reaching end section
 function handleScroll() {
-  const currentScroll = window.scrollY;
-  const scrollDelta = currentScroll - lastScrollPosition;
-  isScrollingDown = scrollDelta > 0;
+  if (isInFinalScene) return;
 
-  // Calculate progress through sections
+  const currentScroll = window.scrollY;
   const section1Height = window.innerHeight * 0.5;
   const section2Height = window.innerHeight;
 
@@ -987,6 +1075,58 @@ function handleScroll() {
   const section2Progress = (currentScroll - section1Height) / section2Height;
   const section3Progress =
     (currentScroll - (section1Height + section2Height)) / section2Height;
+
+  // Play start audio when at the top (scroll position 0,0)
+  if (currentScroll >= 0) {
+    if (startAudio.paused) {
+      startAudio.play().catch((error) => {
+        console.error("Error playing start audio:", error);
+      });
+    }
+  } else {
+    startAudio.pause();
+  }
+
+  // Handle transition audio
+  if (section2Progress >= 0 && section2Progress <= 1.2) {
+    if (transitionAudio.paused) {
+      transitionAudio.play().catch((error) => {
+        console.error("Error playing transition audio:", error);
+      });
+    }
+    startAudio.pause();
+    loopingSectionAudio.pause();
+    sirenAudio.pause();
+  } else {
+    transitionAudio.pause();
+  }
+
+  // Handle looping section audio
+  if (section3Progress >= 0 && section3Progress < 1.2) {
+    if (loopingSectionAudio.paused) {
+      loopingSectionAudio.play().catch((error) => {
+        console.error("Error playing looping section audio:", error);
+      });
+    }
+    startAudio.pause();
+    sirenAudio.pause();
+  } else {
+    loopingSectionAudio.pause();
+  }
+
+  // Handle end section audio
+  if (section3Progress >= 1.2) {
+    if (sirenAudio.paused) {
+      sirenAudio.play().catch((error) => {
+        console.error("Error playing siren audio:", error);
+      });
+    }
+    startAudio.pause();
+    transitionAudio.pause();
+    loopingSectionAudio.pause();
+  } else {
+    sirenAudio.pause();
+  }
 
   // Calculate fade values
   const section1Fade = Math.max(0, Math.min(1, 1 - currentSection1Progress));
@@ -1001,7 +1141,6 @@ function handleScroll() {
         : 1
     )
   );
-  const section3Fade = Math.max(0, Math.min(1, section3Progress));
 
   // Handle sections
   if (currentSection1Progress < 1.2) {
@@ -1094,3 +1233,25 @@ window.addEventListener("load", () => {
   lastScrollPosition = 0;
   window.scrollTo(0, 0);
 });
+
+function fadeAudio(currentAudio, nextAudio, duration) {
+  const fadeOutInterval = 50; // Interval in milliseconds
+  const steps = duration / fadeOutInterval;
+  const fadeOutStep = currentAudio.volume / steps;
+  const fadeInStep = nextAudio.volume / steps;
+
+  let currentStep = 0;
+
+  const fadeOut = setInterval(() => {
+    if (currentStep < steps) {
+      currentAudio.volume -= fadeOutStep;
+      nextAudio.volume += fadeInStep;
+      currentStep++;
+    } else {
+      clearInterval(fadeOut);
+      currentAudio.pause();
+      currentAudio.volume = 0; // Reset volume to 0 after fading out
+    }
+  }, fadeOutInterval);
+}
+history.scrollRestoration = "manual"; // Prevent automatic scroll restoration
