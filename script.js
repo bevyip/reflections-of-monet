@@ -396,17 +396,15 @@ const endSectionLotus = {
   y:
     window.innerHeight * 0.5 +
     (Math.random() - 0.5) * (window.innerHeight * 0.1), // Centered vertically with small variation
-  scale: 0.05,
+  scale: 0.2,
   speed: 5,
   angle: 0,
   rotationSpeed: 0.03,
   moveDirection: Math.random() < 0.5 ? 0 : Math.PI, // Start moving either left or right
   verticalOffset: 0,
-  verticalSpeed: 0.02, // Speed of up/down movement
-  opacity: 0.6,
-  fadeSpeed: 0.01,
-  fadeDirection: 1,
+  verticalSpeed: 0.02,
   isClicked: false,
+  opacity: 0,
   update() {
     // Primarily horizontal movement
     this.x += Math.cos(this.moveDirection) * this.speed;
@@ -425,16 +423,6 @@ const endSectionLotus = {
     // Continuous rotation
     this.angle += this.rotationSpeed;
     if (this.angle > Math.PI * 2) this.angle -= Math.PI * 2;
-
-    // Smooth opacity fade in/out between 0.2 and 1.0
-    this.opacity += this.fadeSpeed * this.fadeDirection;
-    if (this.opacity >= 1.0) {
-      this.opacity = 0.7;
-      this.fadeDirection = -1;
-    } else if (this.opacity <= 0.2) {
-      this.opacity = 0.2;
-      this.fadeDirection = 1;
-    }
   },
 };
 
@@ -898,32 +886,14 @@ const scenes = canvases.map((canvas, index) => ({
         ctx.rotate(endSectionLotus.angle);
         ctx.scale(endSectionLotus.scale, endSectionLotus.scale);
 
-        // First draw: Dark base
-        ctx.globalCompositeOperation = "multiply";
-        ctx.globalAlpha = 0.95;
-        ctx.drawImage(
-          lotusImage,
-          -lotusImage.width / 2,
-          -lotusImage.height / 2
-        );
-
-        // Second draw: Even darker overlay
-        ctx.globalCompositeOperation = "multiply";
-        ctx.globalAlpha = 0.9;
-        ctx.drawImage(
-          lotusImage,
-          -lotusImage.width / 2,
-          -lotusImage.height / 2
-        );
-
-        // Third draw: Final layer with fade effect
-        ctx.globalCompositeOperation = "source-over";
-        ctx.globalAlpha = endSectionLotus.opacity * 0.3;
-        ctx.drawImage(
-          lotusImage,
-          -lotusImage.width / 2,
-          -lotusImage.height / 2
-        );
+        if (endSectionLotus.opacity > 0) {
+          ctx.globalAlpha = endSectionLotus.opacity;
+          ctx.drawImage(
+            lotusImage,
+            -lotusImage.width / 2,
+            -lotusImage.height / 2
+          );
+        }
 
         ctx.restore();
       }
@@ -1052,10 +1022,16 @@ function handleMouseMove(e) {
     const scaledHeight = lotusImage.height * endSectionLotus.scale;
 
     if (
-      Math.abs(rotatedDx) < scaledWidth &&
-      Math.abs(rotatedDy) < scaledHeight
+      Math.abs(rotatedDx) < scaledWidth * 2 &&
+      Math.abs(rotatedDy) < scaledHeight * 2
     ) {
       shouldShowPointer = true;
+      endSectionLotus.opacity = 1;
+      console.log("opacity:" + endSectionLotus.opacity);
+    } else {
+      shouldShowPointer = false;
+      endSectionLotus.opacity = 0;
+      console.log("opacity:" + endSectionLotus.opacity);
     }
   }
 
